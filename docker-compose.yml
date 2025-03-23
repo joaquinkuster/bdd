@@ -1,0 +1,49 @@
+
+version: '3.9'  # Se usa la versión 3.9 de Docker Compose
+
+services:
+  nodo_central:
+    image: postgres:17  # Usa la imagen oficial de PostgreSQL versión 17
+    container_name: nodo_central  # Asigna el nombre del contenedor
+    restart: always  # Reinicia el contenedor automáticamente si falla
+    environment:  # Variables de entorno para la configuración de PostgreSQL
+      POSTGRES_USER: postgres  # Usuario de la base de datos
+      POSTGRES_PASSWORD: postgres  # Contraseña del usuario
+      POSTGRES_DB: nodo_central_bd  # Base de datos predeterminada
+    ports:
+      - "5433:5432"  # Expone y mapea el puerto 5433 del host al 5432 del contenedor
+    volumes:
+      - nodo_central_data:/var/lib/postgresql/data  # Volumen para persistencia de datos
+    networks:
+      - postgres_net  # Se conecta a la red definida abajo
+
+  sucursal_1:
+    image: postgres:17  # Usa la misma imagen de PostgreSQL para la sucursal
+    container_name: sucursal_1  # Nombre del contenedor
+    restart: always  # Reinicia automáticamente si falla
+    environment:
+      POSTGRES_USER: postgres  # Usuario de la base de datos
+      POSTGRES_PASSWORD: postgres  # Contraseña del usuario
+      POSTGRES_DB: sucursal_1_bd  # Base de datos de la sucursal
+    ports:
+      - "5434:5432"  # Expone y mapea el puerto 5434 del host al 5432 del contenedor
+    volumes:
+      - sucursal_1_data:/var/lib/postgresql/data  # Volumen para persistencia de datos
+    networks:
+      - postgres_net  # Se conecta a la misma red que el nodo central
+
+  adminer:
+    image: adminer  # Usa la imagen oficial de Adminer, interfaz web para bases de datos
+    restart: always  # Se reinicia automáticamente si falla
+    ports:
+      - 8081:8080  # Expone Adminer en el puerto 8081 del host
+    networks:
+      - postgres_net  # Se conecta a la red para acceder a ambas bases de datos
+
+volumes:
+  nodo_central_data:  # Volumen para la persistencia de datos del nodo central
+  sucursal_1_data:  # Volumen para la persistencia de datos de la sucursal
+
+networks:
+  postgres_net:
+    driver: bridge  # Se define una red de tipo bridge para la comunicación entre contenedores
